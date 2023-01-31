@@ -1,0 +1,5 @@
+SET @object_schema= '{
+                       "type":"object",
+                        "unevaluatedProperties":{"type":"object"}
+                     }';
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"I_int":20, "S_":"abc", "some_prop1":[1,2,3]}');

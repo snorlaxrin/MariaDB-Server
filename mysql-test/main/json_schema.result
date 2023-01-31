@@ -1,0 +1,445 @@
+SET @schema_array= '{
+                       "type": "array",
+                       "prefixItems": [
+                                       { "type": "number", "maximum": 10, "minimum":3},
+                                       { "type": "string" }
+                                       ],
+                        "additionalItems" : {"type":"number"},
+                        "unevaluatedItems": {"type":"string"},
+                        "items": [
+                                  { "type": "number", "maximum": 10, "minimum":3},
+                                  { "type": "string" },
+                                  {"type":"array"},
+                                  {"type":"string"}]
+                        }';
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]')
+1
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", 45]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", 45]')
+1
+SET @schema_array= '{
+                       "type": "array",
+                       "prefixItems": [
+                                       { "type": "number", "maximum": 10, "minimum":3},
+                                       { "type": "string" }
+                                       ],
+                        "additionalItems" : {"type":"number"},
+                        "unevaluatedItems": {"type":"string"}
+                        }';
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]')
+0
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", 34, 100, 17, "string2"]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", 34, 100, 17, "string2"]')
+0
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", 34, 100, 17]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", 34, 100, 17]')
+1
+SET @schema_array= '{
+                       "type": "array",
+                       "prefixItems": [
+                                       { "type": "number", "maximum": 10, "minimum":3},
+                                       { "type": "string" }
+                                       ],
+                        "unevaluatedItems": {"type":"string"}
+                        }';
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]')
+0
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", "2", "string"]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", "2", "string"]')
+1
+SET @schema_array= '{
+                       "type": "array",
+                        "additionalItems" : {"type":"number"},
+                        "unevaluatedItems": {"type":"string"},
+                        "items": [
+                                  { "type": "number", "maximum": 10, "minimum":3},
+                                  { "type": "string" },
+                                  {"type":"array"},
+                                  {"type":"string"}]
+                        }';
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]')
+0
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "34", 35]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "34", 35]')
+1
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, 12", [1,2], "34", 35]');
+JSON_SCHEMA_VALID(@schema_array, '[5, 12", [1,2], "34", 35]')
+0
+SET @schema_array= '{
+                       "type": "array",
+                        "unevaluatedItems": {"type":"string"},
+                        "items": [
+                                  { "type": "number", "maximum": 10, "minimum":3},
+                                  { "type": "string" },
+                                  {"type":"array"},
+                                  {"type":"string"}]
+                        }';
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]')
+1
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", ["str1", "str2"]]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", ["str1", "str2"]]')
+0
+SET @schema_array= '{
+                       "type": "array",
+                        "additionalItems" : {"type":"number"},
+                        "items": [
+                                  { "type": "number", "maximum": 10, "minimum":3},
+                                  { "type": "string" },
+                                  {"type":"array"},
+                                  {"type":"string"}]
+                        }';
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]')
+0
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", 4]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", 4]')
+1
+SET @schema_array= '{
+                       "type": "array",
+                        "items": [
+                                  { "type": "number", "maximum": 10, "minimum":3},
+                                  { "type": "string" },
+                                  {"type":"array"},
+                                  {"type":"string"}]
+                        }';
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]')
+1
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", 12]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", 12]')
+1
+SET @schema_array= '{
+                       "type": "array",
+                        "additionalItems" : {"type":"number"},
+                        "unevaluatedItems": {"type":"string"}
+                        }';
+SELECT JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]');
+JSON_SCHEMA_VALID(@schema_array, '[5, "string1", [1,2], "2", "string"]')
+1
+SELECT JSON_SCHEMA_VALID(@schema_array, '[1, 2, 3, "str"]');
+JSON_SCHEMA_VALID(@schema_array, '[1, 2, 3, "str"]')
+1
+SELECT JSON_SCHEMA_VALID(@schema_array, '[1, 2, 3, 4]');
+JSON_SCHEMA_VALID(@schema_array, '[1, 2, 3, 4]')
+1
+SET @schema_array= '{
+                       "type": "array",
+                        "unevaluatedItems": {"type":"string"}
+                        }';
+SELECT JSON_SCHEMA_VALID(@schema_array, '[1, 2, 3, "str1"]');
+JSON_SCHEMA_VALID(@schema_array, '[1, 2, 3, "str1"]')
+1
+SELECT JSON_SCHEMA_VALID(@schema_array, '[1, 2, 3, 4]');
+JSON_SCHEMA_VALID(@schema_array, '[1, 2, 3, 4]')
+1
+SELECT JSON_SCHEMA_VALID(@schema_array, '["str1", "str2"]');
+JSON_SCHEMA_VALID(@schema_array, '["str1", "str2"]')
+1
+SET @schema_array= '{
+                       "type": "array",
+                        "additionalItems": {"type":"string"}
+                        }';
+SELECT JSON_SCHEMA_VALID(@schema_array, '[1, 2, 3, "str1"]');
+JSON_SCHEMA_VALID(@schema_array, '[1, 2, 3, "str1"]')
+1
+SELECT JSON_SCHEMA_VALID(@schema_array, '[1, 2, 3, 4]');
+JSON_SCHEMA_VALID(@schema_array, '[1, 2, 3, 4]')
+1
+SELECT JSON_SCHEMA_VALID(@schema_array, '["str1", "str2"]');
+JSON_SCHEMA_VALID(@schema_array, '["str1", "str2"]')
+1
+# Object validation
+SET @object_schema= '{
+                       "type": "object",
+                       "propertyNames": {
+                                          "pattern": "^I_"
+                                         }
+                    }';
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"I_int1":3, "I_int2":4}');
+JSON_SCHEMA_VALID(@object_schema, '{"I_int1":3, "I_int2":4}')
+1
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"I_int1":3, "O_ob1":{"key1":"val1"}}');
+JSON_SCHEMA_VALID(@object_schema, '{"I_int1":3, "O_ob1":{"key1":"val1"}}')
+0
+SET @object_schema= '{
+                       "type":"object",
+                       "properties": {
+                                        "key1":{"type":"string"},
+                                        "key2":{"type":"number", "maximum":50}
+                                     },
+                       "patternProperties": {
+                                              "^I_": {"type":"number", "maximum":100},
+                                              "^S_" : {"type":"string", "maxLength":4}
+                                            },
+                        "additionalProperties":{
+                                                 "type":"array",
+                                                 "maxItems":5
+                                                },
+                        "unevaluatedProperties":{"type":"object"}
+                     }';
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"key1":"val1", "key2": 10, "I_int":20, "S_":"abc", "some_prop1":[1,2,3]}');
+JSON_SCHEMA_VALID(@object_schema, '{"key1":"val1", "key2": 10, "I_int":20, "S_":"abc", "some_prop1":[1,2,3]}')
+1
+SET @object_schema= '{
+                       "type":"object",
+                       "properties": {
+                                        "key1":{"type":"string"},
+                                        "key2":{"type":"number", "maximum":50}
+                                     },
+                        "additionalProperties":{
+                                                 "type":"array",
+                                                 "maxItems":5
+                                                },
+                        "unevaluatedProperties":{"type":"object"}
+                     }';
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"key1":"val1", "key2": 10, "I_int":20, "S_":"abc", "some_prop1":[1,2,3]}');
+JSON_SCHEMA_VALID(@object_schema, '{"key1":"val1", "key2": 10, "I_int":20, "S_":"abc", "some_prop1":[1,2,3]}')
+0
+SET @object_schema= '{
+                       "type":"object",
+                       "properties": {
+                                        "key1":{"type":"string"},
+                                        "key2":{"type":"number", "maximum":50}
+                                     },
+                       "patternProperties": {
+                                              "^I_": {"type":"number", "maximum":100},
+                                              "^S_" : {"type":"string", "maxLength":4}
+                                            },
+                        "unevaluatedProperties":{"type":"object"}
+                     }';
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"key1":"val1", "key2": 10, "I_int":20, "S_":"abc", "some_prop1":[1,2,3]}');
+JSON_SCHEMA_VALID(@object_schema, '{"key1":"val1", "key2": 10, "I_int":20, "S_":"abc", "some_prop1":[1,2,3]}')
+0
+SET @object_schema= '{
+                       "type":"object",
+                       "properties": {
+                                        "key1":{"type":"string"},
+                                        "key2":{"type":"number", "maximum":50}
+                                     },
+                       "patternProperties": {
+                                              "^I_": {"type":"number", "maximum":100},
+                                              "^S_" : {"type":"string", "maxLength":4}
+                                            },
+                        "additionalProperties":{
+                                                 "type":"array",
+                                                 "maxItems":5
+                                                }
+                     }';
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"key1":"val1", "key2": 10, "I_int":20, "S_":"abc", "some_prop1":[1,2,3]}');
+JSON_SCHEMA_VALID(@object_schema, '{"key1":"val1", "key2": 10, "I_int":20, "S_":"abc", "some_prop1":[1,2,3]}')
+1
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"key1":"val1", "key2": 10, "I_int":20, "S_":"abc", "some_prop1":{"key2":"val2"}}');
+JSON_SCHEMA_VALID(@object_schema, '{"key1":"val1", "key2": 10, "I_int":20, "S_":"abc", "some_prop1":{"key2":"val2"}}')
+0
+SET @object_schema= '{
+                       "type":"object",
+                       "patternProperties": {
+                                              "^I_": {"type":"number", "maximum":100},
+                                              "^S_" : {"type":"string", "maxLength":4}
+                                            },
+                        "additionalProperties":{
+                                                 "type":"array",
+                                                 "maxItems":5
+                                                },
+                        "unevaluatedProperties":{"type":"object"}
+                     }';
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"I_int":20, "S_":"abc", "some_prop1":[1,2,3]}');
+JSON_SCHEMA_VALID(@object_schema, '{"I_int":20, "S_":"abc", "some_prop1":[1,2,3]}')
+1
+SET @object_schema= '{
+                       "type":"object",
+                       "patternProperties": {
+                                              "^I_": {"type":"number", "maximum":100},
+                                              "^S_" : {"type":"string", "maxLength":4}
+                                            },
+                        "unevaluatedProperties":{"type":"object"}
+                     }';
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"I_int":20, "S_":"abc", "some_prop1":[1,2,3]}');
+JSON_SCHEMA_VALID(@object_schema, '{"I_int":20, "S_":"abc", "some_prop1":[1,2,3]}')
+0
+SET @object_schema= '{
+                       "type":"object",
+                        "additionalProperties":{
+                                                 "type":"array",
+                                                 "maxItems":5
+                                                },
+                        "unevaluatedProperties":{"type":"object"}
+                     }';
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"I_int":20, "S_":"abc", "some_prop1":[1,2,3]}');
+JSON_SCHEMA_VALID(@object_schema, '{"I_int":20, "S_":"abc", "some_prop1":[1,2,3]}')
+0
+SET @object_schema= '{
+                       "type":"object",
+                        "unevaluatedProperties":{"type":"object"}
+                     }';
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"I_int":20, "S_":"abc", "some_prop1":[1,2,3]}');
+JSON_SCHEMA_VALID(@object_schema, '{"I_int":20, "S_":"abc", "some_prop1":[1,2,3]}')
+0
+SET @object_schema= '{
+                       "type":"object",
+                        "additionalProperties":{
+                                                 "type":"array",
+                                                 "maxItems":5
+                                                }
+                     }';
+SELECT JSON_SCHEMA_VALID(@object_schema, '{"I_int":20, "S_":"abc", "some_prop1":[1,2,3]}');
+JSON_SCHEMA_VALID(@object_schema, '{"I_int":20, "S_":"abc", "some_prop1":[1,2,3]}')
+0
+# Validating logic
+SET @not_schema= '{
+                       "not":{
+                              "maximum": 4
+                              }
+                    }';
+SELECT JSON_SCHEMA_VALID(@not_schema, '{"I_int1":3, "O_ob1":{"key1":"val1"}}');
+JSON_SCHEMA_VALID(@not_schema, '{"I_int1":3, "O_ob1":{"key1":"val1"}}')
+0
+SELECT JSON_SCHEMA_VALID(@not_schema, '3');
+JSON_SCHEMA_VALID(@not_schema, '3')
+0
+SELECT JSON_SCHEMA_VALID(@not_schema, '10');
+JSON_SCHEMA_VALID(@not_schema, '10')
+1
+SET @not_schema= '{
+                       "not":{
+                              "properties": {
+                                              "num1" : {"type":"number", "maximum":5},
+                                              "string1" : { "maxLength": 3}
+                                            }
+                              }
+                    }';
+SELECT JSON_SCHEMA_VALID(@not_schema, '{"num1":10, "string2":"abcd"}');
+JSON_SCHEMA_VALID(@not_schema, '{"num1":10, "string2":"abcd"}')
+1
+SELECT JSON_SCHEMA_VALID(@not_schema, '{"num1":10, "string2":"abcd"}');
+JSON_SCHEMA_VALID(@not_schema, '{"num1":10, "string2":"abcd"}')
+1
+SELECT JSON_SCHEMA_VALID(@not_schema, '{"num1":2, "string2":"abcd"}');
+JSON_SCHEMA_VALID(@not_schema, '{"num1":2, "string2":"abcd"}')
+0
+SET @any_of_schema= '{
+                       "anyOf":[{
+                                  "properties": {
+                                                "num1" : {"type":"number", "maximum":5},
+                                                "string1" : { "maxLength": 3}
+                                                }
+                                },
+                                {
+                                  "properties":{
+                                                 "num1" : {"type":"number", "maximum": 1},
+                                                 "string1" : { "maxLength":5}
+                                               }
+                                }
+                               ]
+                    }';
+SELECT JSON_SCHEMA_VALID(@any_of_schema, '{"num1":2, "string1":"abcd"}');
+JSON_SCHEMA_VALID(@any_of_schema, '{"num1":2, "string1":"abcd"}')
+0
+SELECT JSON_SCHEMA_VALID(@any_of_schema, '{"num1":2, "string1":"abc"}');
+JSON_SCHEMA_VALID(@any_of_schema, '{"num1":2, "string1":"abc"}')
+1
+SET @any_of_schema= '{
+                      "anyOf": [
+                                 {"type":"number", "maximum":5},
+                                 {"type":"string"}
+                               ]
+                    }';
+SELECT JSON_SCHEMA_VALID(@any_of_schema, '2');
+JSON_SCHEMA_VALID(@any_of_schema, '2')
+1
+SELECT JSON_SCHEMA_VALID(@any_of_schema, '6');
+JSON_SCHEMA_VALID(@any_of_schema, '6')
+0
+SELECT JSON_SCHEMA_VALID(@any_of_schema, '[1, 2, 3]');
+JSON_SCHEMA_VALID(@any_of_schema, '[1, 2, 3]')
+0
+SET @one_of_schema= '{
+                       "oneOf":[{
+                                  "properties": {
+                                                "num1" : {"type":"number", "maximum":5},
+                                                "string1" : { "maxLength": 3}
+                                                }
+                                },
+                                {
+                                  "properties":{
+                                                 "num1" : {"type":"number", "maximum": 1},
+                                                 "string1" : { "maxLength":5}
+                                               }
+                                }
+                               ]
+                    }';
+SELECT JSON_SCHEMA_VALID(@one_of_schema, '{"num1":2, "string1":"abcd"}');
+JSON_SCHEMA_VALID(@one_of_schema, '{"num1":2, "string1":"abcd"}')
+0
+SELECT JSON_SCHEMA_VALID(@one_of_schema, '{"num1":2, "string1":"abc"}');
+JSON_SCHEMA_VALID(@one_of_schema, '{"num1":2, "string1":"abc"}')
+1
+SET @one_of_schema= '{
+                      "oneOf": [
+                                 {"type":"number", "maximum":5},
+                                 {"type":"number", "maximum":3}
+                               ]
+                    }';
+SELECT JSON_SCHEMA_VALID(@one_of_schema, '2');
+JSON_SCHEMA_VALID(@one_of_schema, '2')
+0
+SELECT JSON_SCHEMA_VALID(@one_of_schema, '4');
+JSON_SCHEMA_VALID(@one_of_schema, '4')
+1
+SET @all_of_schema= '{
+                       "allOf":[{
+                                  "properties": {
+                                                "num1" : {"type":"number", "maximum":5},
+                                                "string1" : { "maxLength": 3}
+                                                }
+                                },
+                                {
+                                  "properties":{
+                                                 "num1" : {"type":"number", "maximum": 1},
+                                                 "string1" : { "maxLength":5}
+                                               }
+                                }
+                               ]
+                    }';
+SELECT JSON_SCHEMA_VALID(@all_of_schema, '{"num1":2, "string1":"abcd"}');
+JSON_SCHEMA_VALID(@all_of_schema, '{"num1":2, "string1":"abcd"}')
+0
+SET @all_of_schema= '{
+                       "allOf":[
+                                 {
+                                    "properties":{
+                                                   "num1": {"type":"number"},
+                                                   "string1": {"type":"string"}
+                                                 }
+                                 },
+                                 {
+                                    "properties":{
+                                                   "num1": {"maximum":10},
+                                                   "string1": {"maxLength":5}
+                                                 }
+                                 }
+                               ]
+                     }';
+SELECT JSON_SCHEMA_VALID(@all_of_schema, '{"num1":5, "string1":"abc"}');
+JSON_SCHEMA_VALID(@all_of_schema, '{"num1":5, "string1":"abc"}')
+1
+SELECT JSON_SCHEMA_VALID(@all_of_schema, '{"num1":5, "string1":"foobar"}');
+JSON_SCHEMA_VALID(@all_of_schema, '{"num1":5, "string1":"foobar"}')
+0
+SET @all_of_schema= '{
+                      "allOf": [
+                                {"type":"number", "maximum":10},
+                                {"multipleOf":2}
+                               ]
+                     }';
+SELECT JSON_SCHEMA_VALID(@all_of_schema, '4');
+JSON_SCHEMA_VALID(@all_of_schema, '4')
+1
+SELECT JSON_SCHEMA_VALID(@all_of_schema, '7');
+JSON_SCHEMA_VALID(@all_of_schema, '7')
+0
