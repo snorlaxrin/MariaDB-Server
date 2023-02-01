@@ -4588,10 +4588,28 @@ void subselect_indexsubquery_engine::print(String *str,
   str->append(STRING_WITH_LEN("<index_lookup>("));
   tab->ref.items[0]->print(str, query_type);
   str->append(STRING_WITH_LEN(" in "));
-  str->append(tab->table->s->table_name.str, tab->table->s->table_name.length);
-  KEY *key_info= tab->table->key_info+ tab->ref.key;
-  str->append(STRING_WITH_LEN(" on "));
-  str->append(&key_info->name);
+  if (tab->table)
+  {
+    str->append(tab->table->s->table_name.str, tab->table->s->table_name.length);
+    KEY *key_info= tab->table->key_info+ tab->ref.key;
+    str->append(STRING_WITH_LEN(" on "));
+    str->append(&key_info->name);
+  }
+  else
+  {
+    // mysql_derived_fill() has removed tab->table, print out something from
+    // *tab that is more informative...
+    if( tab->tab_list && tab->tab_list->derived )
+    {
+      String dstring;
+      tab->tab_list->derived->print( &dstring, QT_EXPLAIN );
+      str->append(STRING_WITH_LEN("("));
+      str->append(dstring);
+      str->append(STRING_WITH_LEN(")"));
+    }
+    else
+      str->append( STRING_WITH_LEN("MATERIALIZED") );
+  }
   if (check_null)
     str->append(STRING_WITH_LEN(" checking NULL"));
   if (cond)
