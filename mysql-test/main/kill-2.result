@@ -10,3 +10,34 @@ foo
 root
 kill user foo@'127.0.0.1';
 drop user foo@'127.0.0.1';
+#
+# KILL USER and missing privileges
+#
+create user a@localhost;
+create user b@localhost;
+grant process on *.* to a@localhost;
+grant select on *.* to b@localhost;
+connect a,localhost,a;
+show grants;
+Grants for a@localhost
+GRANT PROCESS ON *.* TO `a`@`localhost`
+connect b,localhost,b;
+show processlist;
+Id	User	Host	db	Command	Time	State	Info	Progress
+#	b	localhost	test	Query	#	Init	show processlist	#
+kill user a;
+kill user x;
+connection a;
+show processlist;
+Id	User	Host	db	Command	Time	State	Info	Progress
+#	root	localhost	test	Sleep	#	#	#	#
+#	a	localhost	test	Query	#	#	#	#
+#	b	localhost	test	Sleep	#	#	#	#
+kill user b;
+ERROR HY000: Operation KILL USER failed for b@%
+connection default;
+drop user a@localhost;
+drop user b@localhost;
+#
+# End of 10.3 tests
+#

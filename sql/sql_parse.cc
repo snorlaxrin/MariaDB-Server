@@ -9098,6 +9098,8 @@ static uint kill_threads_for_user(THD *thd, LEX_USER *user,
       if (!(thd->security_ctx->master_access & SUPER_ACL) &&
           !thd->security_ctx->user_matches(tmp->security_ctx))
       {
+        if (!(thd->security_ctx->master_access & PROCESS_ACL))
+          continue;
         mysql_mutex_unlock(&LOCK_thread_count);
         DBUG_RETURN(ER_KILL_DENIED_ERROR);
       }
@@ -9198,7 +9200,10 @@ void sql_kill_user(THD *thd, LEX_USER *user, killed_state state)
     my_ok(thd, rows);
     break;
   case ER_KILL_DENIED_ERROR:
-    my_error(error, MYF(0), (long long) thd->thread_id);
+    char buf[DEFINER_LENGTH+1];
+    strxnmov(buf, sizeof(buf), user->user.str, "@", user->host.str, NULL);
+    my_printf_error(ER_KILL_DENIED_ERROR, ER_THD(thd, ER_CANNOT_USER), MYF(0),
+                    "KILL USER", buf);
     break;
   case ER_OUT_OF_RESOURCES:
   default:
