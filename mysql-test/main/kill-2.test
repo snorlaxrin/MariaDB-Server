@@ -28,3 +28,30 @@ let $wait_condition=
 --source include/wait_condition.inc
 drop user foo@'127.0.0.1';
 --enable_service_connection
+
+--echo #
+--echo # KILL USER and missing privileges
+--echo #
+create user a@localhost;
+create user b@localhost;
+grant process on *.* to a@localhost;
+grant select on *.* to b@localhost;
+--connect a,localhost,a
+show grants;
+--connect b,localhost,b
+--replace_column 1 # 5 # 6 # 9 #
+show processlist;
+kill user a; # existing connection, but not visible to current_user
+kill user x; # not existing connection
+--connection a
+--replace_column 1 # 5 # 6 # 7 # 8 # 9 #
+show processlist;
+--error ER_KILL_DENIED_ERROR
+kill user b;
+--connection default
+drop user a@localhost;
+drop user b@localhost;
+
+--echo #
+--echo # End of 10.3 tests
+--echo #
