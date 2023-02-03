@@ -217,7 +217,6 @@ my_bool opt_extended_validation;
 my_bool opt_encrypted_backup;
 
 /* === metadata of backup === */
-#define XTRABACKUP_METADATA_FILENAME "xtrabackup_checkpoints"
 char metadata_type[30] = ""; /*[full-backuped|log-applied|incremental]*/
 static lsn_t metadata_from_lsn;
 lsn_t metadata_to_lsn;
@@ -1125,8 +1124,8 @@ struct my_option xb_client_options[]= {
      (G_PTR *) &xtrabackup_log_copy_interval, 0, GET_LONG, REQUIRED_ARG, 1000,
      0, LONG_MAX, 0, 1, 0},
     {"extra-lsndir", OPT_XTRA_EXTRA_LSNDIR,
-     "(for --backup): save an extra copy of the xtrabackup_checkpoints file "
-     "in this directory.",
+     "(for --backup): save an extra copy of the " XTRABACKUP_METADATA_FILENAME
+     " file in this directory.",
      (G_PTR *) &xtrabackup_extra_lsndir, (G_PTR *) &xtrabackup_extra_lsndir, 0,
      GET_STR, REQUIRED_ARG, 0, 0, 0, 0, 0, 0},
     {"incremental-lsn", OPT_XTRA_INCREMENTAL,
@@ -1240,7 +1239,7 @@ struct my_option xb_client_options[]= {
 
     {"galera-info", OPT_GALERA_INFO,
      "This options creates the "
-     "xtrabackup_galera_info file which contains the local node state at "
+     XTRABACKUP_GALERA_INFO " file which contains the local node state at "
      "the time of the backup. Option should be used when performing the "
      "backup of MariaDB Galera Cluster. Has no effect when backup locks "
      "are used to create the backup.",
@@ -1251,10 +1250,10 @@ struct my_option xb_client_options[]= {
      "This option is useful when backing "
      "up a replication slave server. It prints the binary log position "
      "and name of the master server. It also writes this information to "
-     "the \"xtrabackup_slave_info\" file as a \"CHANGE MASTER\" command. "
+     "the \"" XTRABACKUP_SLAVE_INFO "\" file as a \"CHANGE MASTER\" command. "
      "A new slave for this master can be set up by starting a slave server "
      "on this backup and issuing a \"CHANGE MASTER\" command with the "
-     "binary log position saved in the \"xtrabackup_slave_info\" file.",
+     "binary log position saved in the \"" XTRABACKUP_SLAVE_INFO "\" file.",
      (uchar *) &opt_slave_info, (uchar *) &opt_slave_info, 0, GET_BOOL, NO_ARG,
      0, 0, 0, 0, 0, 0},
 

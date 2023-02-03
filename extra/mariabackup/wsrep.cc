@@ -52,10 +52,10 @@ permission notice:
 #include <wsrep_api.h>
 
 /*! Name of file where Galera info is stored on recovery */
-#define XB_GALERA_INFO_FILENAME "xtrabackup_galera_info"
+#define XB_GALERA_INFO_FILENAME "mariadb_backup_galera_info"
 
 /***********************************************************************
-Store Galera checkpoint info in the 'xtrabackup_galera_info' file, if that
+Store Galera checkpoint info in the XB_GALERA_INFO_FILENAME file, if that
 information is present in the trx system header. Otherwise, do nothing. */
 void
 xb_write_galera_info(bool incremental_prepare)
