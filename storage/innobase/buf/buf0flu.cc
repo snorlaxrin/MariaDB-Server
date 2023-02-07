@@ -2383,7 +2383,7 @@ unemployed:
     if (!lsn_limit)
       lsn_limit= soft_lsn_limit;
 
-    ulint n_flushed, n;
+    ulint n_flushed= 0, n;
 
     if (UNIV_UNLIKELY(lsn_limit != 0))
     {
@@ -2445,8 +2445,7 @@ do_checkpoint:
 #ifndef DBUG_OFF
 next:
 #endif /* !DBUG_OFF */
-    ut_ad(n >= n_flushed);
-    buf_flush_LRU(n - n_flushed, false);
+    buf_flush_LRU(n >= n_flushed ? n - n_flushed : 0, false);
     mysql_mutex_lock(&buf_pool.flush_list_mutex);
 
     /* when idle flushing kicks in page_cleaner is marked active.
