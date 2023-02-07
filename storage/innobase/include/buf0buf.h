@@ -781,10 +781,10 @@ public:
   inline void write_complete(bool temporary);
 
   /** Write a flushable page to a file. buf_pool.mutex must be held.
-  @param lru         true=buf_pool.LRU; false=buf_pool.flush_list
+  @param evict       whether to evict the page on write completion
   @param space       tablespace
   @return whether the page was flushed and buf_pool.mutex was released */
-  inline bool flush(bool lru, fil_space_t *space);
+  inline bool flush(bool evict, fil_space_t *space);
 
   /** Notify that a page in a temporary tablespace has been modified. */
   void set_temp_modified()

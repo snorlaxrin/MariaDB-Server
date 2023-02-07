@@ -86,11 +86,13 @@ buf_flush_init_for_writing(
 bool buf_flush_list_space(fil_space_t *space, ulint *n_flushed= nullptr)
   MY_ATTRIBUTE((warn_unused_result));
 
-/** Write out dirty blocks from buf_pool.LRU.
+/** Write out dirty blocks from buf_pool.LRU,
+and move clean blocks to buf_pool.free.
 @param max_n    wished maximum mumber of blocks flushed
+@param evict    whether to evict pages after flushing
 @return the number of processed pages
 @retval 0 if a buf_pool.LRU batch is already running */
-ulint buf_flush_LRU(ulint max_n);
+ulint buf_flush_LRU(ulint max_n, bool evict);
 
 /** Wait until a flush batch ends.
 @param lru    true=buf_pool.LRU; false=buf_pool.flush_list */
