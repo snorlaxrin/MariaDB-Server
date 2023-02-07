@@ -1,3 +1,4 @@
+RESET MASTER;
 connect  pause_purge,localhost,root;
 START TRANSACTION WITH CONSISTENT SNAPSHOT;
 connection default;
