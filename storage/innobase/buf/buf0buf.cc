@@ -408,7 +408,6 @@ static bool buf_page_decrypt_after_read(buf_page_t *bpage,
 	if (id.space() == SRV_TMP_SPACE_ID
 	    && innodb_encrypt_temporary_tables) {
 		slot = buf_pool.io_buf_reserve();
-		ut_a(slot);
 		slot->allocate();
 		bool ok = buf_tmp_page_decrypt(slot->crypt_buf, dst_frame);
 		slot->release();
@@ -431,7 +430,6 @@ decompress:
 		}
 
 		slot = buf_pool.io_buf_reserve();
-		ut_a(slot);
 		slot->allocate();
 
 decompress_with_slot:
@@ -455,7 +453,6 @@ decrypt_failed:
 		}
 
 		slot = buf_pool.io_buf_reserve();
-		ut_a(slot);
 		slot->allocate();
 
 		/* decrypt using crypt_buf to dst_frame */
@@ -1291,6 +1288,41 @@ inline bool buf_pool_t::realloc(buf_block_t *block)
 	hash_lock.unlock();
 	buf_LRU_block_free_non_file_page(new_block);
 	return(true); /* free_list was enough */
+}
+
+void buf_pool_t::io_buf_t::create(ulint n_slots)
+{
+  this->n_slots= n_slots;
+  slots= static_cast<buf_tmp_buffer_t*>
+    (ut_malloc_nokey(n_slots * sizeof *slots));
+  memset((void*) slots, 0, n_slots * sizeof *slots);
+}
+
+void buf_pool_t::io_buf_t::close()
+{
+  for (buf_tmp_buffer_t *s= slots, *e= slots + n_slots; s != e; s++)
+  {
+    aligned_free(s->crypt_buf);
+    aligned_free(s->comp_buf);
+  }
+  ut_free(slots);
+  slots= nullptr;
+  n_slots= 0;
+}
+
+buf_tmp_buffer_t *buf_pool_t::io_buf_t::reserve()
+{
+  for (;;)
+  {
+    for (buf_tmp_buffer_t *s= slots, *e= slots + n_slots; s != e; s++)
+      if (s->acquire())
+        return s;
+    os_aio_wait_until_no_pending_writes();
+    for (buf_tmp_buffer_t *s= slots, *e= slots + n_slots; s != e; s++)
+      if (s->acquire())
+        return s;
+    os_aio_wait_until_no_pending_reads();
+  }
 }
 
 /** Sets the global variable that feeds MySQL's innodb_buffer_pool_resize_status
