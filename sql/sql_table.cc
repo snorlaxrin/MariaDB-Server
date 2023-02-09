@@ -2800,7 +2800,7 @@ mysql_prepare_create_table(THD *thd, HA_CREATE_INFO *create_info,
     }
 
     /* The user specified fields: check that structure is ok */
-    if (check_sequence_fields(thd->lex, &alter_info->create_list))
+    if (create_info->seq_create_info->check_sequence_fields(thd->lex, &alter_info->create_list))
       DBUG_RETURN(TRUE);
   }
 
