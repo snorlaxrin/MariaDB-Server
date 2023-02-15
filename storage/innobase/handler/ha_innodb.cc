@@ -93,6 +93,7 @@ this program; if not, write to the Free Software Foundation, Inc.,
 #include "os0file.h"
 #include "page0zip.h"
 #include "row0import.h"
+#include "../row/row0import.cc"
 #include "row0ins.h"
 #include "row0log.h"
 #include "row0merge.h"
@@ -5827,15 +5828,33 @@ ha_innobase::open(const char* name, int, uint)
 	DEBUG_SYNC(thd, "ib_open_after_dict_open");
 
 	if (NULL == ib_table) {
-
-		if (is_part) {
-			sql_print_error("Failed to open table %s.\n",
-					norm_name);
-		}
-		set_my_errno(ENOENT);
-
-		DBUG_RETURN(HA_ERR_NO_SUCH_TABLE);
-	}
+    /** check .cfg file exists. If exists then fetch the old table name */
+    FILE* file = fopen(fil_make_filepath(fil_path_to_mysql_datadir,
+                                         table_name_t(const_cast<char*>(name)),
+                                         CFG,
+                                         fil_path_to_mysql_datadir != nullptr),
+                       "rb");
+    row_import cfg;
+    if (!(row_import_read_meta_data(file, thd, cfg)))
+    {
+      /** open_dict_table using old table name */
+      char *old_name = reinterpret_cast<char *>(cfg.m_table_name);
+      char old_norm_name[FN_REFLEN];
+      normalize_table_name(old_norm_name, old_name);
+      ib_table = open_dict_table(old_name, old_norm_name, is_part, DICT_ERR_IGNORE_FK_NOKEY);
+      /** clone the table object and change the table name,*/
+      memcpy(ib_table->name.m_name, name, sizeof *name);
+    } else
+    {
+      if (is_part)
+      {
+        sql_print_error("Failed to open table %s.\n", norm_name);
+      }
+      set_my_errno(ENOENT);
+      
+      DBUG_RETURN(HA_ERR_NO_SUCH_TABLE);
+    }
+  }
 
 	size_t n_fields = omits_virtual_cols(*table_share)
 		? table_share->stored_fields : table_share->fields;
