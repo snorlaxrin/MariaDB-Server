@@ -5826,7 +5826,25 @@ ha_innobase::open(const char* name, int, uint)
 
 	DEBUG_SYNC(thd, "ib_open_after_dict_open");
 
-	if (NULL == ib_table) {
+  if (NULL == ib_table)
+  {
+    HA_CREATE_INFO create_info;
+    create_info.init();
+    trx_t *trx= innobase_trx_allocate(thd);
+    trx_start_for_ddl(trx);
+    lock_sys_tables(trx);
+    row_mysql_lock_data_dictionary(trx);
+    create(name, table, &create_info, false, trx);
+    trx->commit();
+    row_mysql_unlock_data_dictionary(trx);
+    ib_table = open_dict_table(name, norm_name, is_part,
+                               DICT_ERR_IGNORE_FK_NOKEY);
+  	// m_prebuilt = row_create_prebuilt(ib_table, table->s->reclength);
+    // discard_or_import_tablespace(false);
+    DEBUG_SYNC(thd, "ib_open_after_import_tablespace");
+  }
+
+  if (NULL == ib_table) {
 
 		if (is_part) {
 			sql_print_error("Failed to open table %s.\n",
