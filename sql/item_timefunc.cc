@@ -3918,3 +3918,69 @@ bool Item_func_last_day::get_date(THD *thd, MYSQL_TIME *ltime, date_mode_t fuzzy
   ltime->time_type= MYSQL_TIMESTAMP_DATE;
   return (null_value= 0);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Special item functions used by do_datetime_cmp_rewrites()
+///////////////////////////////////////////////////////////////////////////////
+
+bool Item_func_day_start::get_date(THD *thd, MYSQL_TIME *res,
+                                   date_mode_t fuzzy_date)
+{
+  Datetime dt(thd, args[0], fuzzy_date);
+  if ((null_value= !dt.is_valid_datetime()))
+    return true;
+  dt.copy_to_mysql_time(res);
+
+  res->second_part= res->second= res->minute= res->hour= 0;
+  res->time_type= MYSQL_TIMESTAMP_DATETIME;
+  return null_value= 0;
+}
+
+
+bool Item_func_day_end::get_date(THD *thd, MYSQL_TIME *res,
+                                   date_mode_t fuzzy_date)
+{
+  Datetime dt(thd, args[0], fuzzy_date);
+  if ((null_value= !dt.is_valid_datetime()))
+    return true;
+  dt.copy_to_mysql_time(res);
+
+  res->hour= 23;
+  res->second= res->minute= 59;
+  res->second_part= 999999;
+  res->time_type= MYSQL_TIMESTAMP_DATETIME;
+  return null_value= 0;
+}
+
+
+bool Item_func_year_start::get_date(THD *thd, MYSQL_TIME *res,
+                                    date_mode_t fuzzy_date)
+{
+  res->year= args[0]->val_int();
+  if ((null_value= args[0]->null_value || res->year >= 9999))
+    return 0;
+
+  res->day= res->month= 1;
+  res->second_part= res->second= res->minute= res->hour= 0;
+  res->time_type= MYSQL_TIMESTAMP_DATETIME;
+  res->neg= 0;
+  return null_value= 0;
+}
+
+
+bool Item_func_year_end::get_date(THD *thd, MYSQL_TIME *res,
+                                  date_mode_t fuzzy_date)
+{
+  res->year= args[0]->val_int();
+  if ((null_value= args[0]->null_value || res->year >= 9999))
+    return 0;
+
+  res->month= 12;
+  res->day= 31;
+  res->hour= 23;
+  res->second= res->minute= 59;
+  res->second_part= 999999;
+  res->time_type= MYSQL_TIMESTAMP_DATETIME;
+  res->neg= 0;
+  return null_value= 0;
+}

@@ -462,6 +462,7 @@ public:
     static LEX_CSTRING name= {STRING_WITH_LEN("year") };
     return name;
   }
+  enum Functype functype() const   { return YEAR_FUNC; }
   enum_monotonicity_info get_monotonicity_info() const override;
   longlong val_int_endpoint(bool left_endp, bool *incl_endp) override;
   bool fix_length_and_dec(THD *thd) override
@@ -1334,6 +1335,7 @@ public:
   {
     print_cast_temporal(str, query_type);
   }
+  enum Functype functype() const   { return DATE_FUNC; }
   bool get_date(THD *thd, MYSQL_TIME *ltime, date_mode_t fuzzydate) override;
   bool fix_length_and_dec(THD *thd) override
   {
@@ -2026,5 +2028,102 @@ public:
   }
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// Special item functions used by do_datetime_cmp_rewrites()
+///////////////////////////////////////////////////////////////////////////////
 
+class Item_func_day_start :public Item_datetimefunc
+{
+public:
+  Item_func_day_start(THD *thd, Item *a): Item_datetimefunc(thd, a) {}
+  const char *func_name() const { return "day_start"; }
+  bool get_date(THD *thd, MYSQL_TIME *res, date_mode_t fuzzy_date) override;
+  Item *get_copy(THD *thd) override
+  { return get_item_copy<Item_func_day_start>(thd, this); }
+
+  bool fix_length_and_dec(THD *thd) override
+  {
+    fix_attributes_datetime(args[0]->datetime_precision(thd));
+    set_maybe_null();
+    return FALSE;
+  }
+
+  LEX_CSTRING func_name_cstring() const override
+  {
+    static LEX_CSTRING name= {STRING_WITH_LEN("day_start") };
+    return name;
+  }
+};
+
+
+class Item_func_day_end :public Item_datetimefunc
+{
+public:
+  Item_func_day_end(THD *thd, Item *a): Item_datetimefunc(thd, a) {}
+  const char *func_name() const { return "day_end"; }
+  bool get_date(THD *thd, MYSQL_TIME *res, date_mode_t fuzzy_date) override;
+  Item *get_copy(THD *thd)
+  { return get_item_copy<Item_func_day_end>(thd, this); }
+
+  bool fix_length_and_dec(THD *thd) override
+  {
+    fix_attributes_datetime(args[0]->datetime_precision(thd));
+    set_maybe_null();
+    return FALSE;
+  }
+
+  LEX_CSTRING func_name_cstring() const override
+  {
+    static LEX_CSTRING name= {STRING_WITH_LEN("day_end") };
+    return name;
+  }
+};
+
+
+class Item_func_year_start :public Item_datetimefunc
+{
+public:
+  Item_func_year_start(THD *thd, Item *a): Item_datetimefunc(thd, a) {}
+  const char *func_name() const { return "year_start"; }
+  bool get_date(THD *thd, MYSQL_TIME *res, date_mode_t fuzzy_date) override;
+  Item *get_copy(THD *thd)
+  { return get_item_copy<Item_func_year_start>(thd, this); }
+
+  bool fix_length_and_dec(THD *thd) override
+  {
+    fix_attributes_datetime(args[0]->datetime_precision(thd));
+    set_maybe_null();
+    return FALSE;
+  }
+
+  LEX_CSTRING func_name_cstring() const override
+  {
+    static LEX_CSTRING name= {STRING_WITH_LEN("year_start") };
+    return name;
+  }
+};
+
+
+class Item_func_year_end :public Item_datetimefunc
+{
+public:
+  Item_func_year_end(THD *thd, Item *a): Item_datetimefunc(thd, a) {}
+  const char *func_name() const { return "year_end"; }
+  bool get_date(THD *thd, MYSQL_TIME *res, date_mode_t fuzzy_date) override;
+  Item *get_copy(THD *thd)
+  { return get_item_copy<Item_func_year_end>(thd, this); }
+
+  bool fix_length_and_dec(THD *thd) override
+  {
+    fix_attributes_datetime(args[0]->datetime_precision(thd));
+    set_maybe_null();
+    return FALSE;
+  }
+
+  LEX_CSTRING func_name_cstring() const override
+  {
+    static LEX_CSTRING name= {STRING_WITH_LEN("year_end") };
+    return name;
+  }
+};
 #endif /* ITEM_TIMEFUNC_INCLUDED */

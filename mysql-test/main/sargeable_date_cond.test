@@ -1,0 +1,141 @@
+#
+# MDEV-8320: Allow index usage for DATE(datetime_column) = const
+#
+
+--disable_warnings
+drop table if exists t0,t1,t2,t3;
+--enable_warnings
+
+create table t0(a int);
+insert into t0 values (0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
+
+create table t1(a int);
+insert into t1 select A.a + B.a* 10 from t0 A, t0 B;
+
+create table t2 (pk int primary key, a datetime, b date, key(a), key(b));
+insert into t2 
+select 
+  A.a*10+B.a, 
+  date_add(date_add('2017-01-01', interval A.a*8 day), interval B.a hour), 
+  date_add('2017-01-01', interval A.a*7 day)
+from t1 A, t0 B; 
+
+--echo #
+--echo # "YEAR(datetime_col) CMP year_value", basic checks
+--echo #
+select count(*) from t2 where year(a) < 2018;
+select count(*) from t2 where a < '2018-01-01';
+explain format=json select * from t2 force index(a) where year(a) <  2018;
+
+select count(*) from t2 where year(a) <= 2018;
+select count(*) from t2 where a < '2019-01-01';
+explain format=json select * from t2 force index(a) where year(a) <= 2018;
+
+select count(*) from t2 where year(a) > 2018;
+select count(*) from t2 where a > '2018-12-31 23:59:59.9999';
+explain format=json select * from t2 force index(a) where year(a) >  2018;
+
+select count(*) from t2 where year(a) >= 2018;
+select count(*) from t2 where a >= '2018-01-01';
+explain format=json select * from t2 force index(a) where year(a) >= 2018;
+
+select count(*) from t2 where year(a) = 2017;
+select count(*) from t2 where a >= '2017-01-01' and a < '2018-01-01';
+explain format=json select * from t2 force index(a) where year(a) =  2017;
+
+--echo #
+--echo # "YEAR(datetime_col) CMP year_value", reverse argument order
+--echo #
+select count(*) from t2 where 2017 < year(a);
+select count(*) from t2 where a >= '2018-01-01';
+explain format=json select * from t2 force index(a) where 2017 <  year(a);
+
+select count(*) from t2 where 2018 <= year(a);
+select count(*) from t2 where a >= '2018-01-01';
+explain format=json select * from t2 force index(a) where 2018 <= year(a);
+
+select count(*) from t2 where 2018 > year(a);
+select count(*) from t2 where a < '2018-01-01';
+explain format=json select * from t2 force index(a) where 2018 >  year(a);
+
+select count(*) from t2 where 2018 >= year(a);
+select count(*) from t2 where a < '2019-01-01';
+explain format=json select * from t2 force index(a) where 2018 >= year(a);
+
+select count(*) from t2 where 2018 =  year(a);
+select count(*) from t2 where a >= '2018-01-01' and a < '2019-01-01';
+explain format=json select * from t2 force index(a) where 2018 =  year(a);
+
+--echo #
+--echo # "DATE(datetime_col) CMP date_value", basic checks
+--echo #
+select count(*) from t2 where date(a) < '2017-06-01';
+select count(*) from t2 where a < '2017-06-01';
+explain format=json select * from t2 force index(a) where date(a)< '2017-06-01';
+
+select count(*) from t2 where date(a) <= '2017-06-01';
+select count(*) from t2 where a < '2017-06-02';
+explain format=json select * from t2 force index(a) where date(a)<='2017-06-01';
+
+select count(*) from t2 where date(a) > '2018-06-01';
+select count(*) from t2 where a >= '2018-06-02';
+explain format=json select * from t2 force index(a) where date(a)> '2018-06-01';
+
+select count(*) from t2 where date(a) >= '2018-06-01';
+select count(*) from t2 where a >= '2018-06-01';
+explain format=json select * from t2 force index(a) where date(a)>='2018-06-01';
+
+select count(*) from t2 where date(a) = '2017-06-02';
+select count(*) from t2 where a >= '2017-06-02' and a < '2017-06-03';
+explain format=json select * from t2 force index(a) where date(a)= '2017-06-02';
+
+--echo #
+--echo # Check if "YEAR(date_col) CMP year_value" works
+--echo #
+select count(*) from t2 where year(b)< 2018;
+select count(*) from t2 where b < '2018-01-01';
+explain format=json select * from t2 force index(b) where year(b)<  2018;
+
+--echo #
+--echo # Try DATE function and DATE (not DATETIME) column:
+--echo #
+select count(*) from t2 where date(b)< '2017-06-03';
+select count(*) from t2 where b < '2017-06-03';
+explain format=json select * from t2 force index(b) where date(b)< '2017-06-03';
+
+select count(*) from t2 force index(b) where date(b)= '2017-06-04';
+select count(*) from t2 where b >= '2017-06-04' and b < '2017-06-05';
+explain format=json select * from t2 force index(b) where date(b)='2017-06-04';
+
+--echo #
+--echo # Check actual query results
+--echo #
+insert into t2 values (10001,'2006-12-31 23:59:59','2006-12-31');
+insert into t2 values (10002,'2007-01-01 00:00:00','2007-01-01');
+insert into t2 values (10003,'2007-12-31 23:59:59','2007-12-31');
+insert into t2 values (10004,'2008-01-01 00:00:00','2008-01-01');
+
+explain format=json 
+select * from t2 force index(b) where year(b)=2007;
+select * from t2 force index(b) where year(b)=2007;
+
+insert into t2 values (10010,'2006-12-31 00:00:00','2006-12-31');
+insert into t2 values (10011,'2006-12-30 23:59:59','2006-12-30');
+
+explain format=json 
+select * from t2 force index(a) where date(a)='2006-12-31';
+select * from t2 force index(a) where date(a)='2006-12-31';
+
+--echo #
+--echo # Check that conditions on TIMESTAMP columns are not rewritten
+--echo #
+create table t3 (a timestamp, b date, key(a));
+insert into t3 select a,b from t2;
+explain format=json 
+select * from t3 force index(a) where year(a)>= 2007;
+explain format=json 
+select * from t3 force index(a) where a >= '2007-01-01 00:00:00';
+drop table t3;
+
+drop table t0,t1,t2;
+
