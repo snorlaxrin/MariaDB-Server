@@ -64,6 +64,11 @@ public:
     return m_expr_str;
   }
 
+  sp_lex_cursor* get_lex_for_cursor() override
+  {
+    return this;
+  }
+
 private:
   LEX_CSTRING m_expr_str;
 };
@@ -314,11 +319,8 @@ private:
     Set LEX object.
 
     @param lex           LEX-object
-    @param is_lex_owner  this flag specifies whether this LEX object is owned
-                         by the sp_lex_keeper and so should deleted when
-                         needed.
   */
-  void set_lex(LEX *lex, bool is_lex_owner);
+  void set_lex(LEX *lex);
 
 private:
 

@@ -371,28 +371,43 @@ void sp_lex_keeper::free_lex(THD *thd)
   m_lex->sphead= nullptr;
   lex_end(m_lex);
 
-  delete (st_lex_local *)m_lex;
+  sp_lex_cursor* cursor_lex= m_lex->get_lex_for_cursor();
+  if (cursor_lex == nullptr)
+  {
+    delete (st_lex_local *)m_lex;
+    /*
+      In case it is not sp_lex_cursor set thd->lex to the null value
+      if it points to a LEX object we just deleted in order to avoid
+      dangling pointers problem.
+    */
+    if (thd->lex == m_lex)
+      thd->lex= nullptr;
 
-  /*
-    Set thd->lex to the null value in case it points to a LEX object
-    we just deleted in order to avoid dangling pointer problem
-  */
-  if (thd->lex == m_lex)
-    thd->lex= nullptr;
+    m_lex= nullptr;
+    m_lex_resp= false;
+  }
+  else
+  {
+    /*
+      sp_lex_cursor has references to items allocated on parsing a cursor
+      declaration statement. This items are deleted on re-parsing a failing
+      cursor declaration statement at the method
+        sp_lex_instr::cleanup_before_parsing.
+      Remove the reference to items that will be deleted from sp_lex_cursor
+      in order to avoid dangling pointers problem.
+    */
+    cursor_lex->free_list= nullptr;
+  }
 
-  m_lex= nullptr;
-  m_lex_resp= false;
   lex_query_tables_own_last= nullptr;
 }
 
 
-void sp_lex_keeper::set_lex(LEX *lex, bool is_lex_owner)
+void sp_lex_keeper::set_lex(LEX *lex)
 {
   m_lex= lex;
-  m_lex_resp= is_lex_owner;
-
-  if (m_lex)
-    m_lex->sp_lex_in_use= true;
+  m_lex_resp= true;
+  m_lex->sp_lex_in_use= true;
 }
 
 
@@ -412,7 +427,8 @@ int sp_lex_keeper::validate_lex_and_exec_core(THD *thd, uint *nextp,
 
       if (!lex) return true;
 
-      set_lex(lex, true);
+      if (m_lex == nullptr)
+        set_lex(lex);
 
       m_first_execution= true;
     }
@@ -658,7 +674,8 @@ LEX* sp_lex_instr::parse_expr(THD *thd, sp_head *sp)
   Item *execution_free_list= thd->free_list;
   thd->free_list= nullptr;
 
-  thd->lex= new (thd->mem_root) st_lex_local;
+  if (thd->lex == nullptr)
+    thd->lex= new (thd->mem_root) st_lex_local;
 
   lex_start(thd);
 
@@ -706,10 +723,10 @@ LEX* sp_lex_instr::parse_expr(THD *thd, sp_head *sp)
     free_list= thd->free_list;
   }
 
+  thd->free_list= execution_free_list;
+
   if (arena)
     thd->restore_active_arena(arena, &backup);
-
-  thd->free_list= execution_free_list;
 
   thd->lex->sphead= nullptr;
   thd->lex->spcont= nullptr;
