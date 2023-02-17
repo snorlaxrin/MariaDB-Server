@@ -410,6 +410,7 @@ trx_purge_free_segment(trx_rseg_t* rseg, fil_addr_t hdr_addr)
 	ut_ad(rseg->curr_size >= seg_size);
 
 	rseg->curr_size -= seg_size;
+	rseg->needs_purge = false;
 
 	mutex_exit(&(rseg->mutex));
 
@@ -488,6 +489,7 @@ func_exit:
 		trx_purge_remove_log_hdr(rseg_hdr, block, hdr_addr.boffset,
 					 &mtr);
 
+		rseg.needs_purge = false;
 		mutex_exit(&rseg.mutex);
 		mtr.commit();
 	}
@@ -627,7 +629,7 @@ static void trx_purge_truncate_history()
       mutex_enter(&rseg->mutex);
       ut_ad(rseg->skip_allocation);
       ut_ad(rseg->is_persistent());
-      if (rseg->trx_ref_count)
+      if (rseg->needs_purge || rseg->trx_ref_count)
       {
 not_free:
         mutex_exit(&rseg->mutex);
@@ -753,6 +755,8 @@ not_free:
 
       ut_ad(rseg->id == i);
       ut_ad(rseg->is_persistent());
+      ut_ad(!rseg->trx_ref_count);
+      ut_ad(!rseg->needs_purge);
       ut_d(const auto old_page= rseg->page_no);
 
       buf_block_t *rblock= trx_rseg_header_create(&space, i,
